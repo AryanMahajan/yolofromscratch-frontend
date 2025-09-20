@@ -1,4 +1,6 @@
 import { Routes, Route, Link } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Login from './pages/Login/page';
 import Signup from './pages/Signup/page';
 import Home from './pages/Home/page';
@@ -11,6 +13,7 @@ import EmailConfirmed from './pages/EmailConfirmed/page';
 function App() {
   return (
     <div>
+      <ToastContainer />
       <nav className="bg-gray-800 p-4 shadow-lg">
         <ul className="flex space-x-6">
           <li>
