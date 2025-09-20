@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import GoogleLoginButton from '../../components-google/GoogleLoginButton';
 import { useToast } from '../../hooks/useToast';
 
@@ -32,9 +32,9 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-            <div className="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg shadow-lg">
-                <h2 className="text-3xl font-bold text-center text-white">Login</h2>
+        <div className="flex items-center justify-center min-h-screen bg-black text-gray-200">
+            <div className="w-full max-w-md p-8 space-y-6 bg-gray-900 rounded-lg shadow-lg">
+                <h2 className="text-3xl font-bold text-center text-purple-400">Login</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label htmlFor="email" className="sr-only">
@@ -47,7 +47,7 @@ const Login: React.FC = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full px-4 py-3 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full px-4 py-3 text-gray-200 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
                     </div>
                     <div>
@@ -61,13 +61,13 @@ const Login: React.FC = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full px-4 py-3 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full px-4 py-3 text-gray-200 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
                     </div>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full flex justify-center px-4 py-3 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        className="w-full flex justify-center px-4 py-3 font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                     >
                         {loading ? (
                             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -79,6 +79,14 @@ const Login: React.FC = () => {
                 </form>
                 <div className="mt-6 border-t border-gray-600 pt-6 flex justify-center">
                     <GoogleLoginButton />
+                </div>
+                <div className="mt-6 text-center">
+                    <p className="text-sm text-gray-400">
+                        Don't have an account?{' '}
+                        <Link to="/signup" className="font-medium text-purple-400 hover:text-purple-500">
+                            Sign up
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>
