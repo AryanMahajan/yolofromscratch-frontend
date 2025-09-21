@@ -49,7 +49,7 @@ function App() {
   ];
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="min-h-screen bg-gray-900 relative">
       <ToastContainer
         position="bottom-left"
         autoClose={5000}
@@ -62,8 +62,10 @@ function App() {
         pauseOnHover
         theme="dark"
       />
+      
       {showNavbar && <DynamicNavbar />}
-      <main className="flex-grow">
+      
+      <main className={`min-h-screen ${showDock}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -76,12 +78,17 @@ function App() {
           </Route>
         </Routes>
       </main>
-      {showDock && <Dock
-        items={dockItems}
-        panelHeight={68}
-        baseItemSize={50}
-        magnification={70}
-      />}
+      
+      {showDock && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+          <Dock
+            items={dockItems}
+            panelHeight={68}
+            baseItemSize={50}
+            magnification={70}
+          />
+        </div>
+      )}
     </div>
   );
 }
