@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import GoogleLoginButton from '../../components-google/GoogleLoginButton';
 import { useToast } from '../../hooks/useToast';
 
@@ -8,23 +8,37 @@ const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const { login, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const { showToast } = useToast();
+
+    // Get the intended destination or default to dashboard
+    const from = (location.state as any)?.from?.pathname || '/dashboard';
+
+    // Redirect if already authenticated
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate(from, { replace: true });
+        }
+    }, [isAuthenticated, navigate, from]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login/`, {
-                email,
-                password
-            });
-            localStorage.setItem('access_token', response.data.access_token);
-            localStorage.setItem('refresh_token', response.data.refresh_token);
+            await login(email, password);
             showToast('Login successful!', 'success');
-            navigate('/dashboard');
-        } catch (error) {
-            showToast('Login failed. Please check your credentials.', 'error');
+            navigate(from, { replace: true });
+        } catch (error: any) {
+            if (error.response?.data?.non_field_errors) {
+                showToast(error.response.data.non_field_errors[0], 'error');
+            } else if (error.response?.data?.detail) {
+                showToast(error.response.data.detail, 'error');
+            } else {
+                showToast('Login failed. Please check your credentials.', 'error');
+            }
             console.error('Login failed', error);
         } finally {
             setLoading(false);
@@ -35,6 +49,13 @@ const Login: React.FC = () => {
         <div className="flex items-center justify-center min-h-screen bg-black text-gray-200">
             <div className="w-full max-w-md p-8 space-y-6 bg-gray-900 rounded-lg shadow-lg">
                 <h2 className="text-3xl font-bold text-center text-purple-400">Login</h2>
+                
+                {location.state?.from && (
+                    <div className="bg-blue-900 border border-blue-700 rounded-md p-3 text-sm">
+                        <p className="text-blue-200">Please login to access the requested page.</p>
+                    </div>
+                )}
+                
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label htmlFor="email" className="sr-only">
@@ -67,7 +88,7 @@ const Login: React.FC = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full flex justify-center px-4 py-3 font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                        className="w-full flex justify-center px-4 py-3 font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? (
                             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -77,9 +98,11 @@ const Login: React.FC = () => {
                         ) : 'Login'}
                     </button>
                 </form>
+                
                 <div className="mt-6 border-t border-gray-600 pt-6 flex justify-center">
                     <GoogleLoginButton />
                 </div>
+                
                 <div className="mt-6 text-center">
                     <p className="text-sm text-gray-400">
                         Don't have an account?{' '}

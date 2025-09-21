@@ -7,7 +7,7 @@ const EmailConfirmed: React.FC = () => {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            navigate('/dashboard');
+            navigate('/login');
         }, 10000);
 
         const interval = setInterval(() => {
@@ -26,7 +26,7 @@ const EmailConfirmed: React.FC = () => {
                 <h2 className="text-3xl font-bold text-white">Email Confirmed!</h2>
                 <p className="text-lg text-gray-400">Your email has been successfully verified.</p>
                 <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
-                <p className="text-sm text-gray-500">You will be redirected to the dashboard in {countdown} seconds...</p>
+                <p className="text-sm text-gray-500">You will be redirected to the login page in {countdown} seconds...</p>
             </div>
         </div>
     );
