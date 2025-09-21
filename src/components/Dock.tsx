@@ -177,6 +177,21 @@ export default function Dock({
     setShowProfilePopup(!showProfilePopup);
   };
 
+  const dockRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dockRef.current && !dockRef.current.contains(event.target as Node)) {
+        setShowProfilePopup(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const modifiedItems = items.map(item => {
     if (item.label === 'Profile') {
       return { ...item, onClick: handleProfileClick };
@@ -185,7 +200,7 @@ export default function Dock({
   });
 
   return (
-    <motion.div className="mx-2 flex max-w-full items-center">
+    <motion.div ref={dockRef} className="mx-2 flex max-w-full items-center">
       {showProfilePopup && user && <ProfilePopup user={user} logout={logout} />}
       <motion.div
         onMouseMove={({ pageX }) => {

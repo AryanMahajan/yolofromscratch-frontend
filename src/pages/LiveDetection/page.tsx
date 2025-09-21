@@ -51,7 +51,7 @@ const LiveDetection: React.FC = () => {
     useEffect(() => {
         const videoElement = videoRef.current;
         if (isLive) {
-            const ws = new WebSocket('ws://localhost:8000/ws/video/');
+            const ws = new WebSocket('ws://localhost:8000/ws/video/ultralight/');
             socketRef.current = ws;
 
             ws.onopen = () => {
