@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import UserAvatar from '../assets/react.svg'; // Import the user avatar
 
 const Sidebar: React.FC = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -35,7 +36,7 @@ const Sidebar: React.FC = () => {
             <div className="p-4 border-t border-gray-700">
                 <div className="relative">
                     <div className="flex items-center space-x-4 cursor-pointer" onClick={toggleDropdown}>
-                        <img src="https://via.placeholder.com/40" alt="User" className="w-10 h-10 rounded-full" />
+                        <img src={UserAvatar} alt="User" className="w-10 h-10 rounded-full" />
                         <span className={`${isCollapsed ? 'hidden' : 'block'}`}>User Name</span>
                     </div>
                     {isDropdownOpen && (

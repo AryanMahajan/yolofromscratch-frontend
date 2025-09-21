@@ -17,7 +17,7 @@ const Signup: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await axios.post('http://localhost:8000/api/auth/registration/', {
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/registration/`, {
                 first_name: firstName,
                 last_name: lastName,
                 email,
@@ -40,33 +40,35 @@ const Signup: React.FC = () => {
             <div className="w-full max-w-md p-8 space-y-6 bg-gray-900 rounded-lg shadow-lg">
                 <h2 className="text-3xl font-bold text-center text-purple-400">Signup</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                        <label htmlFor="firstName" className="sr-only">
-                            First Name
-                        </label>
-                        <input
-                            id="firstName"
-                            type="text"
-                            placeholder="First Name"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            required
-                            className="w-full px-4 py-3 text-gray-200 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="lastName" className="sr-only">
-                            Last Name
-                        </label>
-                        <input
-                            id="lastName"
-                            type="text"
-                            placeholder="Last Name"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                            required
-                            className="w-full px-4 py-3 text-gray-200 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        />
+                    <div className="flex space-x-4">
+                        <div>
+                            <label htmlFor="firstName" className="sr-only">
+                                First Name
+                            </label>
+                            <input
+                                id="firstName"
+                                type="text"
+                                placeholder="First Name"
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                required
+                                className="w-full px-4 py-3 text-gray-200 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="lastName" className="sr-only">
+                                Last Name
+                            </label>
+                            <input
+                                id="lastName"
+                                type="text"
+                                placeholder="Last Name"
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
+                                required
+                                className="w-full px-4 py-3 text-gray-200 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            />
+                        </div>
                     </div>
                     <div>
                         <label htmlFor="email" className="sr-only">

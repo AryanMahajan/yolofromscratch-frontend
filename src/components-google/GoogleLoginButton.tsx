@@ -13,7 +13,7 @@ const GoogleLoginButton: React.FC = () => {
         onSuccess: async (tokenResponse) => {
             setLoading(true);
             try {
-                const response = await axios.post('http://localhost:8000/accounts/google/', {
+                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/accounts/google/`, {
                     access_token: tokenResponse.access_token,
                 });
                 localStorage.setItem('access_token', response.data.access_token);

@@ -14,10 +14,10 @@ function DynamicNavbar() {
         </div>
         <div className="flex items-center space-x-6">
           <Link
-            to="#"
+            to="/dashboard"
             className="font-medium hover:text-purple-400 transition-colors"
           >
-            Resources
+            Dashboard
           </Link>
           <Link
             to="/signup"
