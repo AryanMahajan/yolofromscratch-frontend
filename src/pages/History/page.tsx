@@ -149,9 +149,9 @@ const History: React.FC = () => {
 
   const getDetectionTypeIcon = (type: string) => {
     switch (type) {
-      case 'image': return <FaImage className="text-blue-500" />;
-      case 'video': return <FaVideo className="text-green-500" />;
-      case 'live': return <FaWifi className="text-purple-500" />;
+      case 'image': return <FaImage className="text-purple-400" />;
+      case 'video': return <FaVideo className="text-purple-400" />;
+      case 'live': return <FaWifi className="text-purple-400" />;
       default: return <FaHistory />;
     }
   };
@@ -166,22 +166,22 @@ const History: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
-      <Sidebar />
+    <div className="flex h-screen bg-black text-gray-200">
+      
       
       <main className="flex-grow overflow-auto">
         <div className="p-6">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center">
-              <FaHistory className="text-2xl text-purple-500 mr-3" />
+              <FaHistory className="text-2xl text-purple-400 mr-3" />
               <h1 className="text-3xl font-bold">Detection History</h1>
             </div>
             
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowStats(!showStats)}
-                className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                className="flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
               >
                 <FaChartBar className="mr-2" />
                 {showStats ? 'Hide Stats' : 'Show Stats'}
@@ -189,7 +189,7 @@ const History: React.FC = () => {
               
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+                className="flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <FaFilter className="mr-2" />
                 Filters
@@ -209,30 +209,30 @@ const History: React.FC = () => {
           {/* Stats Panel */}
           {showStats && stats && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-900 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-2">Total Detections</h3>
                 <p className="text-2xl font-bold text-purple-400">{stats.total_detections}</p>
               </div>
               
-              <div className="bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-900 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-2">Objects Detected</h3>
-                <p className="text-2xl font-bold text-green-400">{stats.total_objects_detected}</p>
+                <p className="text-2xl font-bold text-purple-400">{stats.total_objects_detected}</p>
               </div>
               
-              <div className="bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-900 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-2">Recent Activity</h3>
-                <p className="text-2xl font-bold text-blue-400">{stats.recent_activity}</p>
+                <p className="text-2xl font-bold text-purple-400">{stats.recent_activity}</p>
                 <p className="text-sm text-gray-400">Last 7 days</p>
               </div>
               
-              <div className="bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-900 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-2">Avg Objects</h3>
-                <p className="text-2xl font-bold text-yellow-400">{stats.avg_objects_per_detection}</p>
+                <p className="text-2xl font-bold text-purple-400">{stats.avg_objects_per_detection}</p>
                 <p className="text-sm text-gray-400">Per detection</p>
               </div>
               
               {stats.top_detected_classes.length > 0 && (
-                <div className="bg-gray-800 p-4 rounded-lg md:col-span-2 lg:col-span-4">
+                <div className="bg-gray-900 p-4 rounded-lg md:col-span-2 lg:col-span-4">
                   <h3 className="text-lg font-semibold mb-2">Top Detected Classes</h3>
                   <div className="flex flex-wrap gap-2">
                     {stats.top_detected_classes.map(([className, count], index) => (
@@ -248,14 +248,14 @@ const History: React.FC = () => {
 
           {/* Filters Panel */}
           {showFilters && (
-            <div className="bg-gray-800 p-4 rounded-lg mb-6">
+            <div className="bg-gray-900 p-4 rounded-lg mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Detection Type</label>
                   <select
                     value={filters.detection_type}
                     onChange={(e) => handleFilterChange('detection_type', e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
                     <option value="">All Types</option>
                     <option value="image">Image Detection</option>
@@ -271,7 +271,7 @@ const History: React.FC = () => {
                     placeholder="e.g., person, car, dog"
                     value={filters.search_class}
                     onChange={(e) => handleFilterChange('search_class', e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
                 
@@ -281,7 +281,7 @@ const History: React.FC = () => {
                     type="datetime-local"
                     value={filters.start_date}
                     onChange={(e) => handleFilterChange('start_date', e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
                 
@@ -291,7 +291,7 @@ const History: React.FC = () => {
                     type="datetime-local"
                     value={filters.end_date}
                     onChange={(e) => handleFilterChange('end_date', e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
               </div>
@@ -299,7 +299,7 @@ const History: React.FC = () => {
               <div className="flex justify-end mt-4 space-x-2">
                 <button
                   onClick={clearFilters}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-md transition-colors"
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors"
                 >
                   Clear
                 </button>
@@ -327,7 +327,7 @@ const History: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {history.map((item) => (
-                <div key={item.id} className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors">
+                <div key={item.id} className="bg-gray-900 rounded-lg p-4 hover:bg-gray-800 transition-colors">
                   <div className="flex justify-between items-start">
                     <div className="flex-grow">
                       <div className="flex items-center mb-2">
@@ -343,7 +343,7 @@ const History: React.FC = () => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                         <div>
                           <span className="text-sm text-gray-400">Objects Detected:</span>
-                          <span className="ml-2 font-medium text-green-400">{item.objects_detected}</span>
+                          <span className="ml-2 font-medium text-purple-400">{item.objects_detected}</span>
                         </div>
                         <div>
                           <span className="text-sm text-gray-400">Confidence:</span>
@@ -370,7 +370,7 @@ const History: React.FC = () => {
                     <div className="flex items-center space-x-2 ml-4">
                       <button
                         onClick={() => setSelectedHistory(item)}
-                        className="p-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                        className="p-2 bg-purple-600 hover:bg-purple-700 rounded-md transition-colors"
                         title="View Details"
                       >
                         <FaEye />
@@ -399,14 +399,14 @@ const History: React.FC = () => {
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors"
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setCurrentPage(prev => prev + 1)}
                   disabled={!hasNextPage}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors"
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors"
                 >
                   Next
                 </button>
@@ -419,7 +419,7 @@ const History: React.FC = () => {
       {/* Detail Modal */}
       {selectedHistory && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-900 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Detection Details</h2>
               <button
@@ -445,7 +445,7 @@ const History: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-gray-400">Objects Detected:</span>
-                  <p className="font-medium text-green-400">{selectedHistory.objects_detected}</p>
+                  <p className="font-medium text-purple-400">{selectedHistory.objects_detected}</p>
                 </div>
                 <div>
                   <span className="text-gray-400">Confidence Threshold:</span>
@@ -467,7 +467,7 @@ const History: React.FC = () => {
               {selectedHistory.detection_data && (
                 <div>
                   <span className="text-gray-400">Detection Data:</span>
-                  <pre className="bg-gray-900 p-3 rounded-md text-sm mt-2 overflow-x-auto">
+                  <pre className="bg-black p-3 rounded-md text-sm mt-2 overflow-x-auto">
                     {JSON.stringify(selectedHistory.detection_data, null, 2)}
                   </pre>
                 </div>

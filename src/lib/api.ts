@@ -169,12 +169,12 @@ export const authApi = {
       password,
     });
     
-    const { access_token, refresh_token, user } = response.data;
-    TokenManager.setTokens(access_token, refresh_token);
+    const { access, refresh, user } = response.data;
+    TokenManager.setTokens(access, refresh);
     
     return {
-      access: access_token,
-      refresh: refresh_token,
+      access,
+      refresh,
       user,
     };
   },
@@ -200,12 +200,12 @@ export const authApi = {
       access_token: accessToken,
     });
     
-    const { access_token, refresh_token, user } = response.data;
-    TokenManager.setTokens(access_token, refresh_token);
+    const { access, refresh, user } = response.data;
+    TokenManager.setTokens(access, refresh);
     
     return {
-      access: access_token,
-      refresh: refresh_token,
+      access,
+      refresh,
       user,
     };
   },

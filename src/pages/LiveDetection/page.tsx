@@ -159,14 +159,14 @@ const LiveDetection: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-gray-200 p-4">
             <div className="w-full max-w-6xl">
-                <h1 className="text-3xl font-bold mb-6 text-center">Live Object Detection</h1>
+                <h1 className="text-3xl font-bold mb-6 text-center text-purple-400">Live Object Detection</h1>
                 
                 {/* Controls */}
                 <div className="flex flex-wrap justify-center items-center gap-4 mb-6">
                     <button 
                         onClick={startLiveFeed} 
                         disabled={isLive} 
-                        className="px-6 py-3 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-3 font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Start Detection
                     </button>
@@ -192,7 +192,7 @@ const LiveDetection: React.FC = () => {
                             value={detectionStats.confidenceThreshold}
                             onChange={(e) => handleConfidenceChange(parseFloat(e.target.value))}
                             disabled={isLive}
-                            className="w-20"
+                            className="w-20 accent-purple-500"
                         />
                     </div>
                 </div>
@@ -200,16 +200,16 @@ const LiveDetection: React.FC = () => {
                 {/* Stats Display */}
                 {isLive && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="bg-gray-800 p-4 rounded-lg text-center">
+                        <div className="bg-gray-900 p-4 rounded-lg text-center">
                             <h3 className="text-lg font-semibold text-purple-400">Frames Processed</h3>
                             <p className="text-2xl font-bold">{detectionStats.totalDetections}</p>
                         </div>
-                        <div className="bg-gray-800 p-4 rounded-lg text-center">
-                            <h3 className="text-lg font-semibold text-green-400">Objects in Frame</h3>
+                        <div className="bg-gray-900 p-4 rounded-lg text-center">
+                            <h3 className="text-lg font-semibold text-purple-400">Objects in Frame</h3>
                             <p className="text-2xl font-bold">{detectionStats.objectsInCurrentFrame}</p>
                         </div>
-                        <div className="bg-gray-800 p-4 rounded-lg text-center">
-                            <h3 className="text-lg font-semibold text-blue-400">Confidence Threshold</h3>
+                        <div className="bg-gray-900 p-4 rounded-lg text-center">
+                            <h3 className="text-lg font-semibold text-purple-400">Confidence Threshold</h3>
                             <p className="text-2xl font-bold">{(detectionStats.confidenceThreshold * 100).toFixed(0)}%</p>
                         </div>
                     </div>
@@ -263,7 +263,7 @@ const LiveDetection: React.FC = () => {
                 </div>
 
                 {/* Instructions */}
-                <div className="mt-6 bg-gray-800 p-4 rounded-lg">
+                <div className="mt-6 bg-gray-900 p-4 rounded-lg">
                     <h3 className="text-lg font-semibold mb-2">Instructions:</h3>
                     <ul className="list-disc list-inside text-gray-300 space-y-1">
                         <li>Click "Start Detection" to begin real-time object detection</li>
