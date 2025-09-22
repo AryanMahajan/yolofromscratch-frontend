@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import GoogleLoginButton from '../../components-google/GoogleLoginButton';
 import { useToast } from '../../hooks/useToast';
+import LightRays from '../../components/LightRays';
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -46,8 +47,11 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-black text-gray-200">
-            <div className="w-full max-w-md p-8 space-y-6 bg-gray-900 rounded-lg shadow-lg">
+        <div className="relative flex items-center justify-center min-h-screen bg-black text-gray-200">
+            <div className="absolute top-0 left-0 w-full h-full">
+                <LightRays raysColor="#BA68C8" />
+            </div>
+            <div className="relative z-10 w-full max-w-md p-8 space-y-6 bg-gray-900/80 backdrop-blur-sm rounded-lg shadow-lg">
                 <h2 className="text-3xl font-bold text-center text-purple-400">Login</h2>
                 
                 {location.state?.from && (
