@@ -49,7 +49,7 @@ function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 relative">
+    <div className="min-h-screen bg-black relative">
       <ToastContainer
         position="bottom-left"
         autoClose={5000}
