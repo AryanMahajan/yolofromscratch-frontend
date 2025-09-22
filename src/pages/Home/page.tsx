@@ -9,16 +9,16 @@ const Home: React.FC = () => {
       <div style={{ width: '100%', height: '100vh', position: 'absolute', top: 0, left: 0}}>
         <LiquidEther
           colors={[ '#5227FF', '#FF9FFC', '#B19EEF' ]}
-          mouseForce={20}
+          mouseForce={15}
           cursorSize={100}
           isViscous={false}
           viscous={30}
           iterationsViscous={32}
           iterationsPoisson={32}
-          resolution={0.5}
+          resolution={0.4}
           isBounce={false}
           autoDemo={true}
-          autoSpeed={0.2}
+          autoSpeed={0.3}
           autoIntensity={4}
           takeoverDuration={0.25}
           autoResumeDelay={3000}
