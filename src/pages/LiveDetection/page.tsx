@@ -7,6 +7,7 @@ const LiveDetection: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [processedFrame, setProcessedFrame] = useState<string | null>(null);
     const [isLive, setIsLive] = useState(false);
+    const [detectionMode, setDetectionMode] = useState('ultralight');
     const [detectionStats, setDetectionStats] = useState({
         totalDetections: 0,
         objectsInCurrentFrame: 0,
@@ -51,7 +52,8 @@ const LiveDetection: React.FC = () => {
     useEffect(() => {
         const videoElement = videoRef.current;
         if (isLive) {
-            const ws = new WebSocket('ws://localhost:8000/ws/video/ultralight/');
+            const path = detectionMode === 'original' ? '' : `${detectionMode}/`;
+            const ws = new WebSocket(`ws://localhost:8000/ws/video/${path}`);
             socketRef.current = ws;
 
             ws.onopen = () => {
@@ -147,7 +149,7 @@ const LiveDetection: React.FC = () => {
                 videoElement.srcObject = null;
             }
         }
-    }, [isLive, detectionStats.confidenceThreshold]);
+    }, [isLive, detectionStats.confidenceThreshold, detectionMode]);
 
     const handleConfidenceChange = (newConfidence: number) => {
         setDetectionStats(prev => ({
@@ -194,6 +196,21 @@ const LiveDetection: React.FC = () => {
                             disabled={isLive}
                             className="w-20 accent-purple-500"
                         />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="detection-mode" className="text-sm font-medium">Detection Mode:</label>
+                        <select
+                            id="detection-mode"
+                            value={detectionMode}
+                            onChange={(e) => setDetectionMode(e.target.value)}
+                            disabled={isLive}
+                            className="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5"
+                        >
+                            <option value="ultralight">Ultra-light</option>
+                            <option value="optimized">Optimized</option>
+                            <option value="original">Original</option>
+                        </select>
                     </div>
                 </div>
 
@@ -266,10 +283,11 @@ const LiveDetection: React.FC = () => {
                 <div className="mt-6 bg-gray-900 p-4 rounded-lg">
                     <h3 className="text-lg font-semibold mb-2">Instructions:</h3>
                     <ul className="list-disc list-inside text-gray-300 space-y-1">
-                        <li>Click "Start Detection" to begin real-time object detection</li>
-                        <li>Adjust the confidence threshold to filter detection results</li>
-                        <li>Your detection session will be automatically saved to history when you stop</li>
-                        <li>Make sure to allow camera access when prompted</li>
+                        <li>Select a detection mode. Ultra-light is recommended for best performance.</li>
+                        <li>Click "Start Detection" to begin real-time object detection.</li>
+                        <li>Adjust the confidence threshold to filter detection results.</li>
+                        <li>Your detection session will be automatically saved to history when you stop.</li>
+                        <li>Make sure to allow camera access when prompted.</li>
                     </ul>
                 </div>
             </div>
