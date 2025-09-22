@@ -9,11 +9,12 @@ import {
   FaChartBar,
   FaImage,
   FaVideo,
-  FaWifi
+  FaWifi,
+  FaClock,
+  FaBullseye
 } from 'react-icons/fa';
 import { historyApi, type DetectionHistory, type DetectionHistoryStats } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
-import Sidebar from '../../components/Sidebar';
 
 interface HistoryFilters {
   detection_type: string;
@@ -147,6 +148,20 @@ const History: React.FC = () => {
     return new Date(dateString).toLocaleString();
   };
 
+  const formatDuration = (seconds: number) => {
+    if (seconds < 60) {
+      return `${Math.round(seconds)}s`;
+    } else if (seconds < 3600) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.round(seconds % 60);
+      return `${minutes}m ${remainingSeconds}s`;
+    } else {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return `${hours}h ${minutes}m`;
+    }
+  };
+
   const getDetectionTypeIcon = (type: string) => {
     switch (type) {
       case 'image': return <FaImage className="text-purple-400" />;
@@ -165,10 +180,74 @@ const History: React.FC = () => {
     }
   };
 
+  const getDetectionModeLabel = (mode: string) => {
+    switch (mode) {
+      case 'coordinates_only': return 'Coords Only';
+      case 'optimized': return 'Optimized';
+      case 'ultra_light': return 'Ultra Light';
+      default: return 'Standard';
+    }
+  };
+
+  const getSessionSummary = (item: DetectionHistory) => {
+    const sessionData = item.detection_data?.session_summary;
+    if (!sessionData) return null;
+
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-400 mt-2">
+        {sessionData.session_duration_seconds && (
+          <div className="flex items-center">
+            <FaClock className="mr-1" />
+            Duration: {formatDuration(sessionData.session_duration_seconds)}
+          </div>
+        )}
+        {sessionData.total_frames && (
+          <div>
+            Frames: {sessionData.total_frames}
+          </div>
+        )}
+        {sessionData.unique_classes_detected && (
+          <div>
+            Classes: {sessionData.unique_classes_detected}
+          </div>
+        )}
+        {sessionData.detection_mode && (
+          <div>
+            Mode: {getDetectionModeLabel(sessionData.detection_mode)}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const getClassDistribution = (item: DetectionHistory) => {
+    const classDistribution = item.detection_data?.class_counts || item.detection_data?.session_summary?.class_distribution;
+    if (!classDistribution || Object.keys(classDistribution).length === 0) return null;
+
+    // Sort classes by count
+    const sortedClasses = Object.entries(classDistribution)
+      .sort(([,a], [,b]) => (b as number) - (a as number))
+      .slice(0, 8); // Show top 8 classes
+
+    return (
+      <div className="mt-2">
+        <div className="text-xs text-gray-400 mb-1">Class Distribution:</div>
+        <div className="flex flex-wrap gap-1">
+          {sortedClasses.map(([className, count]) => (
+            <span 
+              key={className} 
+              className="bg-purple-600 px-2 py-1 rounded text-xs flex items-center"
+            >
+              {className}: {count}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex h-screen bg-black text-gray-200">
-      
-      
       <main className="flex-grow overflow-auto">
         <div className="p-6">
           {/* Header */}
@@ -338,6 +417,11 @@ const History: React.FC = () => {
                         <span className="ml-2 text-sm text-gray-400">
                           {formatDate(item.timestamp)}
                         </span>
+                        {item.detection_data?.session_summary?.detection_mode && (
+                          <span className="ml-2 px-2 py-1 bg-blue-600 rounded text-xs">
+                            {getDetectionModeLabel(item.detection_data.session_summary.detection_mode)}
+                          </span>
+                        )}
                       </div>
                       
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
@@ -352,19 +436,31 @@ const History: React.FC = () => {
                         <div className="md:col-span-2">
                           <span className="text-sm text-gray-400">Classes:</span>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {item.detected_classes.slice(0, 5).map((className, index) => (
-                              <span key={index} className="bg-purple-600 px-2 py-1 rounded text-xs">
-                                {className}
-                              </span>
-                            ))}
-                            {item.detected_classes.length > 5 && (
-                              <span className="bg-gray-600 px-2 py-1 rounded text-xs">
-                                +{item.detected_classes.length - 5} more
-                              </span>
+                            {item.detected_classes && item.detected_classes.length > 0 ? (
+                              <>
+                                {item.detected_classes.slice(0, 5).map((className, index) => (
+                                  <span key={index} className="bg-purple-600 px-2 py-1 rounded text-xs">
+                                    {className}
+                                  </span>
+                                ))}
+                                {item.detected_classes.length > 5 && (
+                                  <span className="bg-gray-600 px-2 py-1 rounded text-xs">
+                                    +{item.detected_classes.length - 5} more
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-xs text-gray-500">No classes detected</span>
                             )}
                           </div>
                         </div>
                       </div>
+
+                      {/* Enhanced session summary */}
+                      {getSessionSummary(item)}
+                      
+                      {/* Class distribution */}
+                      {getClassDistribution(item)}
                     </div>
                     
                     <div className="flex items-center space-x-2 ml-4">
@@ -416,10 +512,10 @@ const History: React.FC = () => {
         </div>
       </main>
 
-      {/* Detail Modal */}
+      {/* Enhanced Detail Modal */}
       {selectedHistory && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-900 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Detection Details</h2>
               <button
@@ -436,9 +532,14 @@ const History: React.FC = () => {
                 <span className="ml-2 font-semibold">
                   {getDetectionTypeLabel(selectedHistory.detection_type)}
                 </span>
+                {selectedHistory.detection_data?.session_summary?.detection_mode && (
+                  <span className="ml-2 px-2 py-1 bg-blue-600 rounded text-xs">
+                    {getDetectionModeLabel(selectedHistory.detection_data.session_summary.detection_mode)}
+                  </span>
+                )}
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <span className="text-gray-400">Timestamp:</span>
                   <p className="font-medium">{formatDate(selectedHistory.timestamp)}</p>
@@ -451,23 +552,62 @@ const History: React.FC = () => {
                   <span className="text-gray-400">Confidence Threshold:</span>
                   <p className="font-medium">{(selectedHistory.confidence_threshold * 100).toFixed(0)}%</p>
                 </div>
+                {selectedHistory.detection_data?.session_summary?.session_duration_seconds && (
+                  <div>
+                    <span className="text-gray-400">Session Duration:</span>
+                    <p className="font-medium">{formatDuration(selectedHistory.detection_data.session_summary.session_duration_seconds)}</p>
+                  </div>
+                )}
+                {selectedHistory.detection_data?.session_summary?.total_frames && (
+                  <div>
+                    <span className="text-gray-400">Total Frames:</span>
+                    <p className="font-medium">{selectedHistory.detection_data.session_summary.total_frames}</p>
+                  </div>
+                )}
+                {selectedHistory.detection_data?.session_summary?.unique_classes_detected && (
+                  <div>
+                    <span className="text-gray-400">Unique Classes:</span>
+                    <p className="font-medium">{selectedHistory.detection_data.session_summary.unique_classes_detected}</p>
+                  </div>
+                )}
               </div>
               
               <div>
                 <span className="text-gray-400">Detected Classes:</span>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedHistory.detected_classes.map((className, index) => (
-                    <span key={index} className="bg-purple-600 px-3 py-1 rounded-full text-sm">
-                      {className}
-                    </span>
-                  ))}
+                  {selectedHistory.detected_classes && selectedHistory.detected_classes.length > 0 ? (
+                    selectedHistory.detected_classes.map((className, index) => (
+                      <span key={index} className="bg-purple-600 px-3 py-1 rounded-full text-sm">
+                        {className}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-gray-500">No classes detected</span>
+                  )}
                 </div>
               </div>
+
+              {/* Enhanced class distribution */}
+              {selectedHistory.detection_data?.class_counts && Object.keys(selectedHistory.detection_data.class_counts).length > 0 && (
+                <div>
+                  <span className="text-gray-400">Class Distribution:</span>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                    {Object.entries(selectedHistory.detection_data.class_counts)
+                      .sort(([,a], [,b]) => (b as number) - (a as number))
+                      .map(([className, count]) => (
+                      <div key={className} className="bg-gray-800 px-3 py-2 rounded flex justify-between">
+                        <span className="text-sm">{className}</span>
+                        <span className="text-purple-400 font-medium">{count as number}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {selectedHistory.detection_data && (
                 <div>
                   <span className="text-gray-400">Detection Data:</span>
-                  <pre className="bg-black p-3 rounded-md text-sm mt-2 overflow-x-auto">
+                  <pre className="bg-black p-3 rounded-md text-sm mt-2 overflow-x-auto max-h-60">
                     {JSON.stringify(selectedHistory.detection_data, null, 2)}
                   </pre>
                 </div>

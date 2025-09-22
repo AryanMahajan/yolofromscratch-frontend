@@ -24,7 +24,7 @@ const ProtectedRoute: React.FC = () => {
     if (!isAuthenticated) {
         // Only show toast for protected routes, not for initial page loads
         if (location.pathname !== '/login' && location.pathname !== '/signup') {
-            showToast('You must be logged in to access this page.', 'error');
+            // showToast('You must be logged in to access this page.', 'error');
         }
         // Pass the current location so user can be redirected back after login
         return <Navigate to="/login" state={{ from: location }} replace />;

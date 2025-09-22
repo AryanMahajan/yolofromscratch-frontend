@@ -2,9 +2,21 @@ import React, { useRef, useEffect, useState } from 'react';
 import { historyApi } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 
+interface Detection {
+    class: string;
+    confidence: number;
+    bbox: {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+    };
+}
+
 const LiveDetection: React.FC = () => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
     const [processedFrame, setProcessedFrame] = useState<string | null>(null);
     const [isLive, setIsLive] = useState(false);
     const [detectionMode, setDetectionMode] = useState('ultralight');
@@ -13,11 +25,70 @@ const LiveDetection: React.FC = () => {
         objectsInCurrentFrame: 0,
         confidenceThreshold: 0.5
     });
+    const [videoDimensions, setVideoDimensions] = useState({ width: 640, height: 480 });
+    const [currentDetections, setCurrentDetections] = useState<Detection[]>([]);
     const streamRef = useRef<MediaStream | null>(null);
     const socketRef = useRef<WebSocket | null>(null);
     const lastDetectionDataRef = useRef<any>(null);
     
     const { showToast } = useToast();
+
+    // Color palette for different classes
+    const colors = [
+        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+        '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
+    ];
+
+    const getColorForClass = (className: string) => {
+        const hash = className.split('').reduce((a, b) => {
+            a = ((a << 5) - a) + b.charCodeAt(0);
+            return a & a;
+        }, 0);
+        return colors[Math.abs(hash) % colors.length];
+    };
+
+    const drawDetections = (detections: Detection[], canvas: HTMLCanvasElement) => {
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Clear previous drawings
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        detections.forEach((detection) => {
+            const { bbox, class: className, confidence } = detection;
+            const color = getColorForClass(className);
+
+            // Scale coordinates to canvas size
+            const scaleX = canvas.width / videoDimensions.width;
+            const scaleY = canvas.height / videoDimensions.height;
+
+            const x1 = bbox.x1 * scaleX;
+            const y1 = bbox.y1 * scaleY;
+            const x2 = bbox.x2 * scaleX;
+            const y2 = bbox.y2 * scaleY;
+
+            const width = x2 - x1;
+            const height = y2 - y1;
+
+            // Draw bounding box
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x1, y1, width, height);
+
+            // Draw label background
+            const label = `${className} ${(confidence * 100).toFixed(0)}%`;
+            ctx.font = '14px Arial';
+            const labelWidth = ctx.measureText(label).width;
+            const labelHeight = 20;
+
+            ctx.fillStyle = color;
+            ctx.fillRect(x1, y1 - labelHeight, labelWidth + 10, labelHeight);
+
+            // Draw label text
+            ctx.fillStyle = 'white';
+            ctx.fillText(label, x1 + 5, y1 - 5);
+        });
+    };
 
     const startLiveFeed = () => {
         setIsLive(true);
@@ -51,9 +122,26 @@ const LiveDetection: React.FC = () => {
 
     useEffect(() => {
         const videoElement = videoRef.current;
+        const overlayCanvas = overlayCanvasRef.current;
+        
         if (isLive) {
-            const path = detectionMode === 'original' ? '' : `${detectionMode}/`;
-            const ws = new WebSocket(`ws://localhost:8000/ws/video/${path}`);
+            // Determine WebSocket path based on detection mode
+            let wsPath = '';
+            switch (detectionMode) {
+                case 'coords':
+                    wsPath = 'ws/video/coords/';
+                    break;
+                case 'optimized':
+                    wsPath = 'ws/video/optimized/';
+                    break;
+                case 'ultralight':
+                    wsPath = 'ws/video/ultralight/';
+                    break;
+                default:
+                    wsPath = 'ws/video/';
+            }
+
+            const ws = new WebSocket(`ws://localhost:8000/${wsPath}`);
             socketRef.current = ws;
 
             ws.onopen = () => {
@@ -76,7 +164,7 @@ const LiveDetection: React.FC = () => {
                     }
                 };
 
-                const intervalId = setInterval(sendFrame, 200);
+                const intervalId = setInterval(sendFrame, detectionMode === 'coords' ? 100 : 200); // Faster for coords mode
 
                 ws.onclose = () => {
                     console.log('WebSocket disconnected');
@@ -86,23 +174,43 @@ const LiveDetection: React.FC = () => {
 
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                setProcessedFrame(data.frame);
                 
-                // Update detection stats and store detection data
-                if (data.detections) {
-                    const objectCount = data.detections.length;
+                // Handle different response formats
+                if (data.mode === 'coordinates_only') {
+                    // Coordinates-only mode - draw on overlay canvas
+                    setCurrentDetections(data.detections || []);
+                    
+                    if (data.video_dimensions) {
+                        setVideoDimensions(data.video_dimensions);
+                    }
+
+                    // Draw detections on overlay canvas
+                    if (overlayCanvas && data.detections) {
+                        drawDetections(data.detections, overlayCanvas);
+                    }
+                } else {
+                    // Normal mode with processed frame
+                    if (data.frame) {
+                        setProcessedFrame(data.frame);
+                    }
+                    setCurrentDetections(data.detections || []);
+                }
+                
+                // Update detection stats
+                if (data.frame_stats) {
                     setDetectionStats(prev => ({
                         ...prev,
-                        totalDetections: prev.totalDetections + 1,
-                        objectsInCurrentFrame: objectCount
+                        totalDetections: data.frame_stats.total_frames_processed,
+                        objectsInCurrentFrame: data.frame_stats.objects_in_frame
                     }));
 
                     // Store the latest detection data for history saving
                     lastDetectionDataRef.current = {
-                        detections: data.detections,
-                        frame_count: detectionStats.totalDetections + 1,
+                        detections: data.detections || [],
+                        frame_count: data.frame_stats.total_frames_processed,
                         timestamp: new Date().toISOString(),
-                        confidence_threshold: detectionStats.confidenceThreshold
+                        confidence_threshold: data.frame_stats.confidence_threshold,
+                        detection_mode: detectionMode
                     };
                 }
             };
@@ -118,6 +226,14 @@ const LiveDetection: React.FC = () => {
                     streamRef.current = stream;
                     if (videoElement) {
                         videoElement.srcObject = stream;
+                        
+                        // Set up overlay canvas to match video dimensions
+                        videoElement.onloadedmetadata = () => {
+                            if (overlayCanvas) {
+                                overlayCanvas.width = videoElement.videoWidth;
+                                overlayCanvas.height = videoElement.videoHeight;
+                            }
+                        };
                     }
                 } catch (err) {
                     console.error("Error accessing webcam: ", err);
@@ -148,6 +264,11 @@ const LiveDetection: React.FC = () => {
             if (videoElement) {
                 videoElement.srcObject = null;
             }
+            // Clear overlay canvas
+            if (overlayCanvas) {
+                const ctx = overlayCanvas.getContext('2d');
+                ctx?.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            }
         }
     }, [isLive, detectionStats.confidenceThreshold, detectionMode]);
 
@@ -156,6 +277,32 @@ const LiveDetection: React.FC = () => {
             ...prev,
             confidenceThreshold: newConfidence
         }));
+    };
+
+    const getDetectionModeLabel = (mode: string) => {
+        switch (mode) {
+            case 'coords':
+                return 'Coordinates Only (Fastest/Less Acurate)';
+            case 'optimized':
+                return 'Optimized';
+            case 'ultralight':
+                return 'Ultra-light';
+            default:
+                return 'Original';
+        }
+    };
+
+    const getDetectionModeDescription = (mode: string) => {
+        switch (mode) {
+            case 'coords':
+                return 'Sends only bounding box coordinates - fastest performance, overlays detections on live feed';
+            case 'optimized':
+                return 'Balanced performance with processed video frames';
+            case 'ultralight':
+                return 'Minimal processing for maximum speed';
+            default:
+                return 'Original YOLO processing';
+        }
     };
 
     return (
@@ -207,11 +354,22 @@ const LiveDetection: React.FC = () => {
                             disabled={isLive}
                             className="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5"
                         >
+                            <option value="coords">Coordinates Only</option>
                             <option value="ultralight">Ultra-light</option>
                             <option value="optimized">Optimized</option>
                             <option value="original">Original</option>
                         </select>
                     </div>
+                </div>
+
+                {/* Mode Description */}
+                <div className="mb-6 bg-gray-900 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-purple-400 mb-2">
+                        {getDetectionModeLabel(detectionMode)}
+                    </h3>
+                    <p className="text-gray-300 text-sm">
+                        {getDetectionModeDescription(detectionMode)}
+                    </p>
                 </div>
 
                 {/* Stats Display */}
@@ -232,6 +390,24 @@ const LiveDetection: React.FC = () => {
                     </div>
                 )}
 
+                {/* Current Detections List */}
+                {isLive && currentDetections.length > 0 && (
+                    <div className="mb-6 bg-gray-900 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold text-purple-400 mb-3">Current Detections</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {currentDetections.map((detection, index) => (
+                                <div 
+                                    key={index}
+                                    className="px-3 py-1 rounded-full text-sm font-medium"
+                                    style={{ backgroundColor: getColorForClass(detection.class) + '40', color: getColorForClass(detection.class) }}
+                                >
+                                    {detection.class}: {(detection.confidence * 100).toFixed(0)}%
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Video Feeds */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="space-y-4">
@@ -244,6 +420,14 @@ const LiveDetection: React.FC = () => {
                                 muted 
                                 className="w-full h-full object-cover"
                             />
+                            {/* Overlay canvas for coordinates mode */}
+                            {detectionMode === 'coords' && (
+                                <canvas
+                                    ref={overlayCanvasRef}
+                                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                                    style={{ mixBlendMode: 'screen' }}
+                                />
+                            )}
                             {!isLive && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75">
                                     <p className="text-gray-400">Camera feed stopped</p>
@@ -253,27 +437,51 @@ const LiveDetection: React.FC = () => {
                     </div>
                     
                     <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-center">Detection Results</h2>
+                        <h2 className="text-xl font-semibold text-center">
+                            {detectionMode === 'coords' ? 'Detection Overlay (Live Feed)' : 'Detection Results'}
+                        </h2>
                         <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video">
-                            {processedFrame && isLive ? (
-                                <img 
-                                    src={processedFrame} 
-                                    alt="Processed Frame" 
-                                    className="w-full h-full object-cover" 
-                                />
-                            ) : (
+                            {detectionMode === 'coords' ? (
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="text-center">
                                         {isLive ? (
-                                            <>
-                                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
-                                                <p className="text-gray-400">Waiting for detection results...</p>
-                                            </>
+                                            <div>
+                                                <div className="animate-pulse text-purple-400 text-lg mb-2">
+                                                    Coordinates Mode Active
+                                                </div>
+                                                <p className="text-gray-400">
+                                                    Detections are overlaid on the live feed (left panel)
+                                                </p>
+                                                <p className="text-sm text-gray-500 mt-2">
+                                                    This mode provides the fastest performance by only sending coordinates
+                                                </p>
+                                            </div>
                                         ) : (
                                             <p className="text-gray-400">Detection stopped</p>
                                         )}
                                     </div>
                                 </div>
+                            ) : (
+                                processedFrame && isLive ? (
+                                    <img 
+                                        src={processedFrame} 
+                                        alt="Processed Frame" 
+                                        className="w-full h-full object-cover" 
+                                    />
+                                ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="text-center">
+                                            {isLive ? (
+                                                <>
+                                                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
+                                                    <p className="text-gray-400">Waiting for detection results...</p>
+                                                </>
+                                            ) : (
+                                                <p className="text-gray-400">Detection stopped</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )
                             )}
                         </div>
                     </div>
@@ -283,11 +491,13 @@ const LiveDetection: React.FC = () => {
                 <div className="mt-6 bg-gray-900 p-4 rounded-lg">
                     <h3 className="text-lg font-semibold mb-2">Instructions:</h3>
                     <ul className="list-disc list-inside text-gray-300 space-y-1">
-                        <li>Select a detection mode. Ultra-light is recommended for best performance.</li>
-                        <li>Click "Start Detection" to begin real-time object detection.</li>
-                        <li>Adjust the confidence threshold to filter detection results.</li>
-                        <li>Your detection session will be automatically saved to history when you stop.</li>
-                        <li>Make sure to allow camera access when prompted.</li>
+                        <li><strong>Coordinates Only</strong>: Fastest mode - overlays detections directly on live feed</li>
+                        <li><strong>Ultra-light</strong>: Minimal processing for speed with processed video output</li>
+                        <li><strong>Optimized</strong>: Balanced performance with adaptive frame processing</li>
+                        <li><strong>Original</strong>: Full YOLO processing with complete detection data</li>
+                        <li>Adjust the confidence threshold to filter detection results</li>
+                        <li>Your detection session will be automatically saved to history when you stop</li>
+                        <li>Make sure to allow camera access when prompted</li>
                     </ul>
                 </div>
             </div>
