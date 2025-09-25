@@ -308,7 +308,7 @@ const LiveDetection: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-gray-200 p-4">
             <div className="w-full max-w-6xl">
-                <h1 className="text-3xl font-bold mb-6 text-center text-purple-400">Live Object Detection</h1>
+                <h1 className="text-3xl font-bold mb-6 text-center text-purple-400"><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">Live Object Detection</span></h1>
                 
                 {/* Controls */}
                 <div className="flex flex-wrap justify-center items-center gap-4 mb-6">
