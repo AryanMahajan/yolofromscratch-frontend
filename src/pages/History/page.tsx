@@ -288,30 +288,30 @@ const History: React.FC = () => {
           {/* Stats Panel */}
           {showStats && stats && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-gray-900 p-4 rounded-lg">
+              <div className="bg-neutral-900 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-2">Total Detections</h3>
                 <p className="text-2xl font-bold text-purple-400">{stats.total_detections}</p>
               </div>
               
-              <div className="bg-gray-900 p-4 rounded-lg">
+              <div className="bg-neutral-900 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-2">Objects Detected</h3>
                 <p className="text-2xl font-bold text-purple-400">{stats.total_objects_detected}</p>
               </div>
               
-              <div className="bg-gray-900 p-4 rounded-lg">
+              <div className="bg-neutral-900 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-2">Recent Activity</h3>
                 <p className="text-2xl font-bold text-purple-400">{stats.recent_activity}</p>
                 <p className="text-sm text-gray-400">Last 7 days</p>
               </div>
               
-              <div className="bg-gray-900 p-4 rounded-lg">
+              <div className="bg-neutral-900 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-2">Avg Objects</h3>
                 <p className="text-2xl font-bold text-purple-400">{stats.avg_objects_per_detection}</p>
                 <p className="text-sm text-gray-400">Per detection</p>
               </div>
               
               {stats.top_detected_classes.length > 0 && (
-                <div className="bg-gray-900 p-4 rounded-lg md:col-span-2 lg:col-span-4">
+                <div className="bg-neutral-900 p-4 rounded-lg md:col-span-2 lg:col-span-4">
                   <h3 className="text-lg font-semibold mb-2">Top Detected Classes</h3>
                   <div className="flex flex-wrap gap-2">
                     {stats.top_detected_classes.map(([className, count], index) => (
@@ -327,7 +327,7 @@ const History: React.FC = () => {
 
           {/* Filters Panel */}
           {showFilters && (
-            <div className="bg-gray-900 p-4 rounded-lg mb-6">
+            <div className="bg-neutral-900 p-4 rounded-lg mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Detection Type</label>
@@ -406,7 +406,7 @@ const History: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {history.map((item) => (
-                <div key={item.id} className="bg-gray-900 rounded-lg p-4 hover:bg-gray-800 transition-colors">
+                <div key={item.id} className="bg-neutral-900 rounded-lg p-4 hover:bg-gray-800 transition-colors">
                   <div className="flex justify-between items-start">
                     <div className="flex-grow">
                       <div className="flex items-center mb-2">
@@ -515,7 +515,7 @@ const History: React.FC = () => {
       {/* Enhanced Detail Modal */}
       {selectedHistory && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-neutral-900 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Detection Details</h2>
               <button

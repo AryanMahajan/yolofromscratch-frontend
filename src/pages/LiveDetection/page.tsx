@@ -363,7 +363,7 @@ const LiveDetection: React.FC = () => {
                 </div>
 
                 {/* Mode Description */}
-                <div className="mb-6 bg-gray-900 p-4 rounded-lg">
+                <div className="mb-6 bg-neutral-900 p-4 rounded-lg">
                     <h3 className="text-lg font-semibold text-purple-400 mb-2">
                         {getDetectionModeLabel(detectionMode)}
                     </h3>
@@ -375,15 +375,15 @@ const LiveDetection: React.FC = () => {
                 {/* Stats Display */}
                 {isLive && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="bg-gray-900 p-4 rounded-lg text-center">
+                        <div className="bg-neutral-900 p-4 rounded-lg text-center">
                             <h3 className="text-lg font-semibold text-purple-400">Frames Processed</h3>
                             <p className="text-2xl font-bold">{detectionStats.totalDetections}</p>
                         </div>
-                        <div className="bg-gray-900 p-4 rounded-lg text-center">
+                        <div className="bg-neutral-900 p-4 rounded-lg text-center">
                             <h3 className="text-lg font-semibold text-purple-400">Objects in Frame</h3>
                             <p className="text-2xl font-bold">{detectionStats.objectsInCurrentFrame}</p>
                         </div>
-                        <div className="bg-gray-900 p-4 rounded-lg text-center">
+                        <div className="bg-neutral-900 p-4 rounded-lg text-center">
                             <h3 className="text-lg font-semibold text-purple-400">Confidence Threshold</h3>
                             <p className="text-2xl font-bold">{(detectionStats.confidenceThreshold * 100).toFixed(0)}%</p>
                         </div>
@@ -392,7 +392,7 @@ const LiveDetection: React.FC = () => {
 
                 {/* Current Detections List */}
                 {isLive && currentDetections.length > 0 && (
-                    <div className="mb-6 bg-gray-900 p-4 rounded-lg">
+                    <div className="mb-6 bg-neutral-900 p-4 rounded-lg">
                         <h3 className="text-lg font-semibold text-purple-400 mb-3">Current Detections</h3>
                         <div className="flex flex-wrap gap-2">
                             {currentDetections.map((detection, index) => (
@@ -412,7 +412,7 @@ const LiveDetection: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="space-y-4">
                         <h2 className="text-xl font-semibold text-center">Live Camera Feed</h2>
-                        <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video">
+                        <div className="relative bg-neutral-900 rounded-lg overflow-hidden aspect-video">
                             <video 
                                 ref={videoRef} 
                                 autoPlay 
@@ -429,7 +429,7 @@ const LiveDetection: React.FC = () => {
                                 />
                             )}
                             {!isLive && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75">
+                                <div className="absolute inset-0 flex items-center justify-center bg-neutral-900 bg-opacity-75">
                                     <p className="text-gray-400">Camera feed stopped</p>
                                 </div>
                             )}
@@ -440,7 +440,7 @@ const LiveDetection: React.FC = () => {
                         <h2 className="text-xl font-semibold text-center">
                             {detectionMode === 'coords' ? 'Detection Overlay (Live Feed)' : 'Detection Results'}
                         </h2>
-                        <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video">
+                        <div className="relative bg-neutral-900 rounded-lg overflow-hidden aspect-video">
                             {detectionMode === 'coords' ? (
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="text-center">
@@ -488,7 +488,7 @@ const LiveDetection: React.FC = () => {
                 </div>
 
                 {/* Instructions */}
-                <div className="mt-6 bg-gray-900 p-4 rounded-lg">
+                <div className="mt-6 bg-neutral-900 p-4 rounded-lg">
                     <h3 className="text-lg font-semibold mb-2">Instructions:</h3>
                     <ul className="list-disc list-inside text-gray-300 space-y-1">
                         <li><strong>Coordinates Only</strong>: Fastest mode - overlays detections directly on live feed</li>

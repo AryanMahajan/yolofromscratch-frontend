@@ -37,6 +37,7 @@ export interface DetectionHistory {
 }
 
 export interface DetectionHistoryStats {
+  detection_type_distribution: any;
   total_detections: number;
   detections_by_type: {
     image: number;

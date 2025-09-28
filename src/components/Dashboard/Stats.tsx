@@ -58,20 +58,20 @@ const DashboardStats: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Stat Cards */}
-          <div className="bg-gray-900 p-4 rounded-lg">
+          <div className="bg-neutral-900 p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-2">Total Detections</h3>
             <p className="text-3xl font-bold text-purple-400">{stats.total_detections}</p>
           </div>
-          <div className="bg-gray-900 p-4 rounded-lg">
+          <div className="bg-neutral-900 p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-2">Objects Detected</h3>
             <p className="text-3xl font-bold text-purple-400">{stats.total_objects_detected}</p>
           </div>
-          <div className="bg-gray-900 p-4 rounded-lg">
+          <div className="bg-neutral-900 p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-2">Recent Activity</h3>
             <p className="text-3xl font-bold text-purple-400">{stats.recent_activity}</p>
             <p className="text-sm text-gray-400">Last 7 days</p>
           </div>
-          <div className="bg-gray-900 p-4 rounded-lg">
+          <div className="bg-neutral-900 p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-2">Avg Objects/Detection</h3>
             <p className="text-3xl font-bold text-purple-400">{stats.avg_objects_per_detection}</p>
           </div>
@@ -79,7 +79,7 @@ const DashboardStats: React.FC = () => {
           {/* Top Detected Classes Bar Chart and Actions */}
           {topClassesData.length > 0 && (
             <div className="flex flex-col md:flex-row gap-6 md:col-span-2 lg:col-span-4">
-              <div className="bg-gray-900 p-4 rounded-lg flex-grow">
+              <div className="bg-neutral-900 p-4 rounded-lg flex-grow">
                 <h3 className="text-lg font-semibold mb-4 flex items-center"><FaChartLine className="mr-2 text-purple-400"/>Top Detected Classes</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={topClassesData}>
@@ -91,7 +91,7 @@ const DashboardStats: React.FC = () => {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-              <div className="bg-gray-900 p-4 rounded-lg flex flex-col justify-center items-center md:w-1/3">
+              <div className="bg-neutral-900 p-4 rounded-lg flex flex-col justify-center items-center md:w-1/3">
                 <h3 className="text-lg font-semibold mb-4">Actions</h3>
                 <Link to="/live-detection" className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg mb-4 w-full text-center">
                   Start Live Detection
@@ -105,7 +105,7 @@ const DashboardStats: React.FC = () => {
           
           {/* Detection Type Distribution Pie Chart */}
           {stats.detection_type_distribution && (
-            <div className="bg-gray-900 p-4 rounded-lg md:col-span-2">
+            <div className="bg-neutral-900 p-4 rounded-lg md:col-span-2">
               <h3 className="text-lg font-semibold mb-4 flex items-center"><FaChartPie className="mr-2 text-purple-400"/>Detection Type Distribution</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
