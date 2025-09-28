@@ -258,13 +258,13 @@ const History: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-4">
-              <button
+              {/* <button
                 onClick={() => setShowStats(!showStats)}
                 className="flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
               >
                 <FaChartBar className="mr-2" />
                 {showStats ? 'Hide Stats' : 'Show Stats'}
-              </button>
+              </button> */}
               
               <button
                 onClick={() => setShowFilters(!showFilters)}
@@ -274,14 +274,14 @@ const History: React.FC = () => {
                 Filters
               </button>
 
-              <button
+              {/* <button
                 onClick={handleClearAllHistory}
                 className="flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
                 disabled={history.length === 0}
               >
                 <FaTrash className="mr-2" />
                 Clear All
-              </button>
+              </button> */}
             </div>
           </div>
 
@@ -471,13 +471,13 @@ const History: React.FC = () => {
                       >
                         <FaEye />
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => handleDeleteHistory(item.id)}
                         className="p-2 bg-red-600 hover:bg-red-700 rounded-md transition-colors"
                         title="Delete"
                       >
                         <FaTrash />
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>

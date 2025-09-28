@@ -7,10 +7,11 @@ import Home from './pages/Home/page';
 import Dashboard from './pages/Dashboard/page';
 import History from './pages/History/page';
 import ProtectedRoute from './components/ProtectedRoute';
+import UploadVideo from './pages/UploadVideo/page';
 import LiveDetection from './pages/LiveDetection/page';
 import EmailConfirmed from './pages/EmailConfirmed/page';
 import Dock from './components/Dock';
-import { Home as HomeIcon, User, ScanLine, LayoutDashboard, History as HistoryIcon } from 'lucide-react';
+import { Home as HomeIcon, User, ScanLine, LayoutDashboard, History as HistoryIcon, Video } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DynamicNavbar from './components/dynamic-navbar';
 
@@ -40,6 +41,11 @@ function App() {
       icon: <ScanLine />,
       label: 'Live Detection',
       onClick: () => navigate('/live-detection'),
+    },
+    {
+      icon: <Video />,
+      label: 'Video',
+      onClick: () => navigate('/upload-video'),
     },
     {
       icon: <HistoryIcon />,
@@ -75,6 +81,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/live-detection" element={<LiveDetection />} />
             <Route path="/history" element={<History />} />
+            <Route path="/upload-video" element={<UploadVideo />} />
           </Route>
         </Routes>
       </main>
