@@ -268,7 +268,7 @@ const History: React.FC = () => {
               
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                className="cursor-pointer flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <FaFilter className="mr-2" />
                 Filters
@@ -330,11 +330,11 @@ const History: React.FC = () => {
             <div className="bg-neutral-900 p-4 rounded-lg mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Detection Type</label>
+                  <label className="block text-sm font-medium mb-2 ">Detection Type</label>
                   <select
                     value={filters.detection_type}
                     onChange={(e) => handleFilterChange('detection_type', e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
                   >
                     <option value="">All Types</option>
                     <option value="image">Image Detection</option>
@@ -360,7 +360,7 @@ const History: React.FC = () => {
                     type="datetime-local"
                     value={filters.start_date}
                     onChange={(e) => handleFilterChange('start_date', e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
                   />
                 </div>
                 
@@ -370,7 +370,7 @@ const History: React.FC = () => {
                     type="datetime-local"
                     value={filters.end_date}
                     onChange={(e) => handleFilterChange('end_date', e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
                   />
                 </div>
               </div>
@@ -378,13 +378,13 @@ const History: React.FC = () => {
               <div className="flex justify-end mt-4 space-x-2">
                 <button
                   onClick={clearFilters}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors"
+                  className="cursor-pointer px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors"
                 >
                   Clear
                 </button>
                 <button
                   onClick={applyFilters}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md transition-colors"
+                  className="cursor-pointer px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md transition-colors"
                 >
                   Apply Filters
                 </button>
@@ -466,7 +466,7 @@ const History: React.FC = () => {
                     <div className="flex items-center space-x-2 ml-4">
                       <button
                         onClick={() => setSelectedHistory(item)}
-                        className="p-2 bg-purple-600 hover:bg-purple-700 rounded-md transition-colors"
+                        className="cursor-pointer p-2 bg-purple-600 hover:bg-purple-700 rounded-md transition-colors"
                         title="View Details"
                       >
                         <FaEye />
@@ -520,7 +520,7 @@ const History: React.FC = () => {
               <h2 className="text-xl font-bold">Detection Details</h2>
               <button
                 onClick={() => setSelectedHistory(null)}
-                className="text-gray-400 hover:text-white text-xl"
+                className="text-gray-400 hover:text-white text-xl cursor-pointer"
               >
                 ×
               </button>

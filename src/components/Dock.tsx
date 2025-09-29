@@ -78,7 +78,7 @@ function DockItem({
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
-      className={`relative inline-flex items-center justify-center rounded-full bg-[#060010] border-neutral-700 border-2 shadow-md ${className}`}
+      className={`cursor-pointer relative inline-flex items-center justify-center rounded-full bg-[#060010] border-neutral-700 border-2 shadow-md ${className}`}
       tabIndex={0}
       role="button"
       aria-haspopup="true"
@@ -140,12 +140,12 @@ const ProfilePopup = ({ user, logout }: { user: any; logout: () => void; }) => {
         <p className="text-gray-400 text-sm">{user.email}</p>
       </div>
       <div className="mt-4 flex flex-col space-y-2">
-        <Link to="/profile" className="text-center w-full px-4 py-2 text-sm text-white bg-purple-600 rounded-md hover:bg-purple-700">
+        {/* <Link to="/profile" className="text-center w-full px-4 py-2 text-sm text-white bg-purple-600 rounded-md hover:bg-purple-700">
           Profile Settings
-        </Link>
+        </Link> */}
         <button
           onClick={logout}
-          className="w-full px-4 py-2 text-sm text-white bg-red-600 rounded-md hover:bg-red-700"
+          className="cursor-pointer w-full px-4 py-2 text-sm text-white bg-red-600 rounded-md hover:bg-red-700"
         >
           Logout
         </button>

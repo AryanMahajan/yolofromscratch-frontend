@@ -315,7 +315,7 @@ const LiveDetection: React.FC = () => {
                     <button 
                         onClick={startLiveFeed} 
                         disabled={isLive} 
-                        className="px-6 py-3 font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="cursor-pointer px-6 py-3 font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Start Detection
                     </button>
@@ -323,7 +323,7 @@ const LiveDetection: React.FC = () => {
                     <button 
                         onClick={stopLiveFeed} 
                         disabled={!isLive} 
-                        className="px-6 py-3 font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="cursor-pointer px-6 py-3 font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Stop Detection
                     </button>
@@ -341,7 +341,7 @@ const LiveDetection: React.FC = () => {
                             value={detectionStats.confidenceThreshold}
                             onChange={(e) => handleConfidenceChange(parseFloat(e.target.value))}
                             disabled={isLive}
-                            className="w-20 accent-purple-500"
+                            className="cursor-pointer w-20 accent-purple-500"
                         />
                     </div>
 
@@ -352,7 +352,7 @@ const LiveDetection: React.FC = () => {
                             value={detectionMode}
                             onChange={(e) => setDetectionMode(e.target.value)}
                             disabled={isLive}
-                            className="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5"
+                            className="cursor-pointer bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5"
                         >
                             <option value="coords">Coordinates Only</option>
                             <option value="ultralight">Ultra-light</option>

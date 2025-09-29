@@ -31,7 +31,7 @@ const Home: React.FC = () => {
           This project blends deep learning, modern web tech, and real-time performance. Powered by <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">YOLO</span>, built with React and Django, it’s more than a demo — it’s proof of what I can build when AI meets full-stack development.
         </p>
         <Link to="/login" className="pointer-events-auto">
-          <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full text-lg transition duration-300 ease-in-out transform hover:scale-105">
+          <button className="cursor-pointer bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full text-lg transition duration-300 ease-in-out transform hover:scale-105">
             Try It Now
           </button>
         </Link>
