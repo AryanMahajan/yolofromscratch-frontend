@@ -1,6 +1,23 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { 
+  Play, 
+  Square, 
+  Settings, 
+  Activity, 
+  Camera, 
+  Zap, 
+  Shield, 
+  Cpu, 
+  Target,
+  BarChart3,
+  Layers,
+  Info,
+  Loader2,
+  AlertCircle
+} from 'lucide-react';
 import { historyApi } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
+import SpotlightCard from '../../components/SpotlightCard';
 
 interface Detection {
     class: string;
@@ -33,7 +50,6 @@ const LiveDetection: React.FC = () => {
     
     const { showToast } = useToast();
 
-    // Color palette for different classes
     const colors = [
         '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
         '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
@@ -51,14 +67,12 @@ const LiveDetection: React.FC = () => {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        // Clear previous drawings
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         detections.forEach((detection) => {
             const { bbox, class: className, confidence } = detection;
             const color = getColorForClass(className);
 
-            // Scale coordinates to canvas size
             const scaleX = canvas.width / videoDimensions.width;
             const scaleY = canvas.height / videoDimensions.height;
 
@@ -67,26 +81,19 @@ const LiveDetection: React.FC = () => {
             const x2 = bbox.x2 * scaleX;
             const y2 = bbox.y2 * scaleY;
 
-            const width = x2 - x1;
-            const height = y2 - y1;
-
-            // Draw bounding box
             ctx.strokeStyle = color;
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x1, y1, width, height);
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
 
-            // Draw label background
             const label = `${className} ${(confidence * 100).toFixed(0)}%`;
-            ctx.font = '14px Arial';
+            ctx.font = 'bold 12px Inter, system-ui, sans-serif';
             const labelWidth = ctx.measureText(label).width;
-            const labelHeight = 20;
-
+            
             ctx.fillStyle = color;
-            ctx.fillRect(x1, y1 - labelHeight, labelWidth + 10, labelHeight);
+            ctx.fillRect(x1, y1 - 22, labelWidth + 12, 22);
 
-            // Draw label text
             ctx.fillStyle = 'white';
-            ctx.fillText(label, x1 + 5, y1 - 5);
+            ctx.fillText(label, x1 + 6, y1 - 7);
         });
     };
 
@@ -97,26 +104,21 @@ const LiveDetection: React.FC = () => {
 
     const stopLiveFeed = () => {
         setIsLive(false);
-        // Save the last detection to history when stopping
         saveDetectionToHistory();
     };
 
     const saveDetectionToHistory = async () => {
-        if (!lastDetectionDataRef.current) {
-            return;
-        }
-
+        if (!lastDetectionDataRef.current) return;
         try {
             await historyApi.createHistory({
                 detection_data: lastDetectionDataRef.current,
                 detection_type: 'live',
                 confidence_threshold: detectionStats.confidenceThreshold,
             });
-            
-            showToast('Detection session saved to history', 'success');
+            showToast('Session saved to history.', 'success');
         } catch (error) {
-            console.error('Failed to save detection to history:', error);
-            showToast('Failed to save detection to history', 'error');
+            console.error('Failed to save session:', error);
+            showToast('Failed to save session.', 'error');
         }
     };
 
@@ -125,86 +127,54 @@ const LiveDetection: React.FC = () => {
         const overlayCanvas = overlayCanvasRef.current;
         
         if (isLive) {
-            // Determine WebSocket path based on detection mode
             let wsPath = '';
             switch (detectionMode) {
-                case 'coords':
-                    wsPath = 'ws/video/coords/';
-                    break;
-                case 'optimized':
-                    wsPath = 'ws/video/optimized/';
-                    break;
-                case 'ultralight':
-                    wsPath = 'ws/video/ultralight/';
-                    break;
-                default:
-                    wsPath = 'ws/video/';
+                case 'coords': wsPath = 'ws/video/coords/'; break;
+                case 'optimized': wsPath = 'ws/video/optimized/'; break;
+                case 'ultralight': wsPath = 'ws/video/ultralight/'; break;
+                default: wsPath = 'ws/video/';
             }
 
             const ws = new WebSocket(`ws://localhost:8000/${wsPath}`);
             socketRef.current = ws;
 
             ws.onopen = () => {
-                console.log('WebSocket connected');
-                const sendFrame = () => {
+                const intervalId = setInterval(() => {
                     if (videoElement && canvasRef.current && ws.readyState === WebSocket.OPEN) {
                         const canvas = canvasRef.current;
                         const context = canvas.getContext('2d');
-
                         if (context) {
                             canvas.width = 640;
                             canvas.height = 480;
                             context.drawImage(videoElement, 0, 0, 640, 480);
-                            const data = canvas.toDataURL('image/jpeg');
                             ws.send(JSON.stringify({ 
-                                frame: data,
+                                frame: canvas.toDataURL('image/jpeg', 0.8),
                                 confidence_threshold: detectionStats.confidenceThreshold
                             }));
                         }
                     }
-                };
+                }, detectionMode === 'coords' ? 100 : 200);
 
-                const intervalId = setInterval(sendFrame, detectionMode === 'coords' ? 100 : 200); // Faster for coords mode
-
-                ws.onclose = () => {
-                    console.log('WebSocket disconnected');
-                    clearInterval(intervalId);
-                };
+                ws.onclose = () => clearInterval(intervalId);
             };
 
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                
-                // Handle different response formats
                 if (data.mode === 'coordinates_only') {
-                    // Coordinates-only mode - draw on overlay canvas
                     setCurrentDetections(data.detections || []);
-                    
-                    if (data.video_dimensions) {
-                        setVideoDimensions(data.video_dimensions);
-                    }
-
-                    // Draw detections on overlay canvas
-                    if (overlayCanvas && data.detections) {
-                        drawDetections(data.detections, overlayCanvas);
-                    }
+                    if (data.video_dimensions) setVideoDimensions(data.video_dimensions);
+                    if (overlayCanvas && data.detections) drawDetections(data.detections, overlayCanvas);
                 } else {
-                    // Normal mode with processed frame
-                    if (data.frame) {
-                        setProcessedFrame(data.frame);
-                    }
+                    if (data.frame) setProcessedFrame(data.frame);
                     setCurrentDetections(data.detections || []);
                 }
                 
-                // Update detection stats
                 if (data.frame_stats) {
                     setDetectionStats(prev => ({
                         ...prev,
                         totalDetections: data.frame_stats.total_frames_processed,
                         objectsInCurrentFrame: data.frame_stats.objects_in_frame
                     }));
-
-                    // Store the latest detection data for history saving
                     lastDetectionDataRef.current = {
                         detections: data.detections || [],
                         frame_count: data.frame_stats.total_frames_processed,
@@ -218,16 +188,11 @@ const LiveDetection: React.FC = () => {
             const startVideo = async () => {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { 
-                            width: 640, 
-                            height: 480 
-                        } 
+                        video: { width: 640, height: 480 } 
                     });
                     streamRef.current = stream;
                     if (videoElement) {
                         videoElement.srcObject = stream;
-                        
-                        // Set up overlay canvas to match video dimensions
                         videoElement.onloadedmetadata = () => {
                             if (overlayCanvas) {
                                 overlayCanvas.width = videoElement.videoWidth;
@@ -236,269 +201,245 @@ const LiveDetection: React.FC = () => {
                         };
                     }
                 } catch (err) {
-                    console.error("Error accessing webcam: ", err);
-                    showToast('Error accessing webcam. Please check permissions.', 'error');
+                    showToast('Camera access denied.', 'error');
                 }
             };
-
             startVideo();
 
             return () => {
-                if (ws) {
-                    ws.close();
-                }
-                if (streamRef.current) {
-                    streamRef.current.getTracks().forEach(track => track.stop());
-                }
-                if (videoElement) {
-                    videoElement.srcObject = null;
-                }
+                ws.close();
+                streamRef.current?.getTracks().forEach(track => track.stop());
+                if (videoElement) videoElement.srcObject = null;
             };
         } else {
-            if (socketRef.current) {
-                socketRef.current.close();
-            }
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-            }
-            if (videoElement) {
-                videoElement.srcObject = null;
-            }
-            // Clear overlay canvas
-            if (overlayCanvas) {
-                const ctx = overlayCanvas.getContext('2d');
-                ctx?.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-            }
+            socketRef.current?.close();
+            streamRef.current?.getTracks().forEach(track => track.stop());
+            if (videoElement) videoElement.srcObject = null;
+            if (overlayCanvas) overlayCanvas.getContext('2d')?.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
         }
     }, [isLive, detectionStats.confidenceThreshold, detectionMode]);
 
-    const handleConfidenceChange = (newConfidence: number) => {
-        setDetectionStats(prev => ({
-            ...prev,
-            confidenceThreshold: newConfidence
-        }));
-    };
-
-    const getDetectionModeLabel = (mode: string) => {
-        switch (mode) {
-            case 'coords':
-                return 'Coordinates Only (Fastest/Less Acurate)';
-            case 'optimized':
-                return 'Optimized';
-            case 'ultralight':
-                return 'Ultra-light';
-            default:
-                return 'Original';
-        }
-    };
-
-    const getDetectionModeDescription = (mode: string) => {
-        switch (mode) {
-            case 'coords':
-                return 'Sends only bounding box coordinates - fastest performance, overlays detections on live feed';
-            case 'optimized':
-                return 'Balanced performance with processed video frames';
-            case 'ultralight':
-                return 'Minimal processing for maximum speed';
-            default:
-                return 'Original YOLO processing';
-        }
-    };
-
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-black text-gray-200 p-4">
-            <div className="w-full max-w-6xl">
-                <h1 className="text-3xl font-bold mb-6 text-center text-purple-400"><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">Live Object Detection</span></h1>
-                
-                {/* Controls */}
-                <div className="flex flex-wrap justify-center items-center gap-4 mb-6">
-                    <button 
-                        onClick={startLiveFeed} 
-                        disabled={isLive} 
-                        className="cursor-pointer px-6 py-3 font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Start Detection
-                    </button>
-                    
-                    <button 
-                        onClick={stopLiveFeed} 
-                        disabled={!isLive} 
-                        className="cursor-pointer px-6 py-3 font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Stop Detection
-                    </button>
-                    
-                    <div className="flex items-center gap-2">
-                        <label htmlFor="confidence" className="text-sm font-medium">
-                            Confidence: {(detectionStats.confidenceThreshold * 100).toFixed(0)}%
-                        </label>
-                        <input
-                            id="confidence"
-                            type="range"
-                            min="0.1"
-                            max="1"
-                            step="0.05"
-                            value={detectionStats.confidenceThreshold}
-                            onChange={(e) => handleConfidenceChange(parseFloat(e.target.value))}
-                            disabled={isLive}
-                            className="cursor-pointer w-20 accent-purple-500"
-                        />
+        <div className="min-h-screen bg-black text-white pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto space-y-8">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div>
+                        <h1 className="text-4xl font-black text-white flex items-center tracking-tight">
+                            <Activity className="mr-3 text-purple-500" size={32} />
+                            Live AI Detection
+                        </h1>
+                        <p className="text-gray-500 mt-1">Real-time object recognition using YOLO architecture.</p>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                        <label htmlFor="detection-mode" className="text-sm font-medium">Detection Mode:</label>
-                        <select
-                            id="detection-mode"
-                            value={detectionMode}
-                            onChange={(e) => setDetectionMode(e.target.value)}
-                            disabled={isLive}
-                            className="cursor-pointer bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5"
+                    
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={isLive ? stopLiveFeed : startLiveFeed} 
+                            className={`flex items-center px-8 py-3 rounded-xl font-bold transition-all shadow-lg ${
+                                isLive 
+                                ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-500/20' 
+                                : 'bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/20'
+                            }`}
                         >
-                            <option value="coords">Coordinates Only</option>
-                            <option value="ultralight">Ultra-light</option>
-                            <option value="optimized">Optimized</option>
-                            <option value="original">Original</option>
-                        </select>
+                            {isLive ? <><Square className="mr-2" size={20} /> Stop Stream</> : <><Play className="mr-2" size={20} /> Start Stream</>}
+                        </button>
                     </div>
                 </div>
 
-                {/* Mode Description */}
-                <div className="mb-6 bg-neutral-900 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold text-purple-400 mb-2">
-                        {getDetectionModeLabel(detectionMode)}
-                    </h3>
-                    <p className="text-gray-300 text-sm">
-                        {getDetectionModeDescription(detectionMode)}
-                    </p>
-                </div>
-
-                {/* Stats Display */}
-                {isLive && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="bg-neutral-900 p-4 rounded-lg text-center">
-                            <h3 className="text-lg font-semibold text-purple-400">Frames Processed</h3>
-                            <p className="text-2xl font-bold">{detectionStats.totalDetections}</p>
-                        </div>
-                        <div className="bg-neutral-900 p-4 rounded-lg text-center">
-                            <h3 className="text-lg font-semibold text-purple-400">Objects in Frame</h3>
-                            <p className="text-2xl font-bold">{detectionStats.objectsInCurrentFrame}</p>
-                        </div>
-                        <div className="bg-neutral-900 p-4 rounded-lg text-center">
-                            <h3 className="text-lg font-semibold text-purple-400">Confidence Threshold</h3>
-                            <p className="text-2xl font-bold">{(detectionStats.confidenceThreshold * 100).toFixed(0)}%</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Current Detections List */}
-                {isLive && currentDetections.length > 0 && (
-                    <div className="mb-6 bg-neutral-900 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-purple-400 mb-3">Current Detections</h3>
-                        <div className="flex flex-wrap gap-2">
-                            {currentDetections.map((detection, index) => (
-                                <div 
-                                    key={index}
-                                    className="px-3 py-1 rounded-full text-sm font-medium"
-                                    style={{ backgroundColor: getColorForClass(detection.class) + '40', color: getColorForClass(detection.class) }}
-                                >
-                                    {detection.class}: {(detection.confidence * 100).toFixed(0)}%
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Video Feeds */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-center">Live Camera Feed</h2>
-                        <div className="relative bg-neutral-900 rounded-lg overflow-hidden aspect-video">
-                            <video 
-                                ref={videoRef} 
-                                autoPlay 
-                                playsInline 
-                                muted 
-                                className="w-full h-full object-cover"
-                            />
-                            {/* Overlay canvas for coordinates mode */}
-                            {detectionMode === 'coords' && (
-                                <canvas
-                                    ref={overlayCanvasRef}
-                                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                                    style={{ mixBlendMode: 'screen' }}
-                                />
-                            )}
-                            {!isLive && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-neutral-900 bg-opacity-75">
-                                    <p className="text-gray-400">Camera feed stopped</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-center">
-                            {detectionMode === 'coords' ? 'Detection Overlay (Live Feed)' : 'Detection Results'}
-                        </h2>
-                        <div className="relative bg-neutral-900 rounded-lg overflow-hidden aspect-video">
-                            {detectionMode === 'coords' ? (
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="text-center">
-                                        {isLive ? (
-                                            <div>
-                                                <div className="animate-pulse text-purple-400 text-lg mb-2">
-                                                    Coordinates Mode Active
-                                                </div>
-                                                <p className="text-gray-400">
-                                                    Detections are overlaid on the live feed (left panel)
-                                                </p>
-                                                <p className="text-sm text-gray-500 mt-2">
-                                                    This mode provides the fastest performance by only sending coordinates
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <p className="text-gray-400">Detection stopped</p>
-                                        )}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    {/* Controls Sidebar */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <SpotlightCard className="p-6" spotlightColor="rgba(168, 85, 247, 0.15)">
+                            <h2 className="text-lg font-bold mb-6 flex items-center">
+                                <Settings className="mr-2 text-purple-500" size={20} />
+                                Engine Config
+                            </h2>
+                            
+                            <div className="space-y-6">
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-sm font-medium text-gray-400">Confidence</label>
+                                        <span className="text-sm font-black text-purple-400">{(detectionStats.confidenceThreshold * 100).toFixed(0)}%</span>
                                     </div>
-                                </div>
-                            ) : (
-                                processedFrame && isLive ? (
-                                    <img 
-                                        src={processedFrame} 
-                                        alt="Processed Frame" 
-                                        className="w-full h-full object-cover" 
+                                    <input
+                                        type="range"
+                                        min="0.1"
+                                        max="1"
+                                        step="0.05"
+                                        value={detectionStats.confidenceThreshold}
+                                        onChange={(e) => setDetectionStats(prev => ({ ...prev, confidenceThreshold: parseFloat(e.target.value) }))}
+                                        disabled={isLive}
+                                        className="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
                                     />
-                                ) : (
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="text-center">
-                                            {isLive ? (
-                                                <>
-                                                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
-                                                    <p className="text-gray-400">Waiting for detection results...</p>
-                                                </>
-                                            ) : (
-                                                <p className="text-gray-400">Detection stopped</p>
-                                            )}
-                                        </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-sm font-medium text-gray-400">Model Precision</label>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {['coords', 'ultralight', 'optimized', 'original'].map((mode) => (
+                                            <button
+                                                key={mode}
+                                                onClick={() => setDetectionMode(mode)}
+                                                disabled={isLive}
+                                                className={`text-left px-4 py-3 rounded-xl text-xs font-bold transition-all border ${
+                                                    detectionMode === mode 
+                                                    ? 'bg-purple-500/10 border-purple-500 text-purple-400' 
+                                                    : 'bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-700'
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="uppercase tracking-widest">{mode}</span>
+                                                    {mode === 'coords' && <Zap size={12} />}
+                                                    {mode === 'optimized' && <Cpu size={12} />}
+                                                    {mode === 'original' && <Shield size={12} />}
+                                                </div>
+                                                <p className="font-medium text-[10px] opacity-60 lowercase">
+                                                    {mode === 'coords' ? 'Overlay only' : mode === 'ultralight' ? 'Fast' : mode === 'optimized' ? 'Balanced' : 'Full accuracy'}
+                                                </p>
+                                            </button>
+                                        ))}
                                     </div>
-                                )
-                            )}
+                                </div>
+                            </div>
+                        </SpotlightCard>
+
+                        {isLive && (
+                            <SpotlightCard className="p-6 border border-purple-500/20" spotlightColor="rgba(168, 85, 247, 0.1)">
+                                <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center">
+                                    <BarChart3 className="mr-2 text-purple-500" size={16} />
+                                    Live Metrics
+                                </h2>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center p-3 bg-gray-900 rounded-xl border border-gray-800">
+                                        <span className="text-xs text-gray-500">Objects</span>
+                                        <span className="text-lg font-black text-purple-400">{detectionStats.objectsInCurrentFrame}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-3 bg-gray-900 rounded-xl border border-gray-800">
+                                        <span className="text-xs text-gray-500">FPS Avg</span>
+                                        <span className="text-lg font-black text-white">~{detectionMode === 'coords' ? '30' : '15'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-3 bg-gray-900 rounded-xl border border-gray-800">
+                                        <span className="text-xs text-gray-500">Total Frames</span>
+                                        <span className="text-lg font-black text-white">{detectionStats.totalDetections}</span>
+                                    </div>
+                                </div>
+                            </SpotlightCard>
+                        )}
+                    </div>
+
+                    {/* Video Feeds */}
+                    <div className="lg:col-span-3 space-y-8">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
+                                        <Camera className="mr-2" size={16} /> Source Feed
+                                    </h3>
+                                    {isLive && <span className="flex items-center text-[10px] font-bold text-red-500 animate-pulse"><div className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5" /> REC</span>}
+                                </div>
+                                <div className="relative aspect-video bg-gray-900 rounded-3xl overflow-hidden border border-gray-800 shadow-2xl">
+                                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                                    {detectionMode === 'coords' && <canvas ref={overlayCanvasRef} className="absolute top-0 left-0 w-full h-full pointer-events-none" />}
+                                    {!isLive && (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/80 backdrop-blur-sm">
+                                            <div className="p-4 bg-gray-900 rounded-full mb-4">
+                                                <Camera className="text-gray-700" size={32} />
+                                            </div>
+                                            <p className="text-gray-500 font-bold tracking-tight">Feed Inactive</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
+                                        <Target className="mr-2" size={16} /> AI Inference
+                                    </h3>
+                                    {isLive && <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 uppercase">Active</span>}
+                                </div>
+                                <div className="relative aspect-video bg-gray-900 rounded-3xl overflow-hidden border border-gray-800 shadow-2xl">
+                                    {detectionMode === 'coords' ? (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center bg-gray-950/40 backdrop-blur-sm">
+                                            <div className="p-4 bg-purple-500/10 rounded-full mb-6">
+                                                <Zap className="text-purple-500" size={40} />
+                                            </div>
+                                            <p className="text-xl font-black text-white mb-2 uppercase tracking-tighter italic">Turbo Mode</p>
+                                            <p className="text-gray-500 text-sm max-w-xs">Bypassing frame transmission. Detections are rendered directly on the source feed.</p>
+                                        </div>
+                                    ) : (
+                                        processedFrame && isLive ? (
+                                            <img src={processedFrame} alt="Result" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/80 backdrop-blur-sm">
+                                                {isLive ? (
+                                                    <>
+                                                        <Loader2 className="animate-spin text-purple-500 mb-4" size={40} />
+                                                        <p className="text-gray-500 font-bold tracking-tight">Wait for inference...</p>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="p-4 bg-gray-900 rounded-full mb-4">
+                                                            <Target className="text-gray-700" size={32} />
+                                                        </div>
+                                                        <p className="text-gray-500 font-bold tracking-tight">AI Offline</p>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Detection Chips */}
+                        {isLive && currentDetections.length > 0 && (
+                            <SpotlightCard className="p-6" spotlightColor="rgba(168, 85, 247, 0.1)">
+                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center">
+                                    <Layers className="mr-2" size={14} /> Buffer Classes
+                                </h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {currentDetections.map((d, i) => (
+                                        <div 
+                                            key={i}
+                                            className="px-4 py-2 rounded-xl text-xs font-black uppercase transition-all flex items-center border"
+                                            style={{ 
+                                                backgroundColor: getColorForClass(d.class) + '15', 
+                                                color: getColorForClass(d.class),
+                                                borderColor: getColorForClass(d.class) + '30'
+                                            }}
+                                        >
+                                            <Target size={12} className="mr-2" />
+                                            {d.class} <span className="ml-2 opacity-60">{(d.confidence * 100).toFixed(0)}%</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </SpotlightCard>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <SpotlightCard className="p-6" spotlightColor="rgba(59, 130, 246, 0.1)">
+                                <h4 className="font-bold text-white mb-3 flex items-center text-sm">
+                                    <Info className="mr-2 text-blue-500" size={16} /> Mode Info
+                                </h4>
+                                <p className="text-xs text-gray-500 leading-relaxed">
+                                    Current engine: <span className="text-white font-bold">{detectionMode}</span>. 
+                                    {detectionMode === 'coords' && " Optimizing for low-latency by processing only coordinate deltas. Recommended for mobile or weak connections."}
+                                    {detectionMode === 'ultralight' && " Using quantized weights for faster inference at slight cost of precision."}
+                                    {detectionMode === 'optimized' && " Standard balance between performance and detection accuracy."}
+                                    {detectionMode === 'original' && " Maximum precision with full YOLO processing. Highest CPU/GPU usage."}
+                                </p>
+                            </SpotlightCard>
+                            <SpotlightCard className="p-6" spotlightColor="rgba(16, 185, 129, 0.1)">
+                                <h4 className="font-bold text-white mb-3 flex items-center text-sm">
+                                    <Shield className="mr-2 text-emerald-500" size={16} /> Data Safety
+                                </h4>
+                                <p className="text-xs text-gray-500 leading-relaxed">
+                                    All detection data is processed securely. Sessions are automatically indexed and saved to your history for future review and model retraining insights.
+                                </p>
+                            </SpotlightCard>
                         </div>
                     </div>
-                </div>
-
-                {/* Instructions */}
-                <div className="mt-6 bg-neutral-900 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2">Instructions:</h3>
-                    <ul className="list-disc list-inside text-gray-300 space-y-1">
-                        <li><strong>Coordinates Only</strong>: Fastest mode - overlays detections directly on live feed</li>
-                        <li><strong>Ultra-light</strong>: Minimal processing for speed with processed video output</li>
-                        <li><strong>Optimized</strong>: Balanced performance with adaptive frame processing</li>
-                        <li><strong>Original</strong>: Full YOLO processing with complete detection data</li>
-                        <li>Adjust the confidence threshold to filter detection results</li>
-                        <li>Your detection session will be automatically saved to history when you stop</li>
-                        <li>Make sure to allow camera access when prompted</li>
-                    </ul>
                 </div>
             </div>
             

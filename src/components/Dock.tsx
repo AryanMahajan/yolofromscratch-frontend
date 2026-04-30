@@ -134,20 +134,21 @@ function DockIcon({ children, className = '' }: DockIconProps) {
 
 const ProfilePopup = ({ user, logout }: { user: any; logout: () => void; }) => {
   return (
-    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-64 bg-gray-900 border border-purple-700 rounded-lg shadow-lg p-4">
-      <div className="text-center">
-        <p className="text-white font-semibold">{user.username}</p>
-        <p className="text-gray-400 text-sm">{user.email}</p>
+    <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-72 bg-gray-950/90 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-6 z-[100] animate-in slide-in-from-bottom-4 duration-300">
+      <div className="flex flex-col items-center text-center">
+        <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center text-2xl font-black text-white mb-4 shadow-lg shadow-purple-500/20">
+            {user.username?.[0]?.toUpperCase() || 'U'}
+        </div>
+        <p className="text-white font-bold text-lg leading-tight">{user.username}</p>
+        <p className="text-gray-500 text-xs mt-1 mb-6">{user.email}</p>
       </div>
-      <div className="mt-4 flex flex-col space-y-2">
-        {/* <Link to="/profile" className="text-center w-full px-4 py-2 text-sm text-white bg-purple-600 rounded-md hover:bg-purple-700">
-          Profile Settings
-        </Link> */}
+      <div className="space-y-2">
         <button
           onClick={logout}
-          className="cursor-pointer w-full px-4 py-2 text-sm text-white bg-red-600 rounded-md hover:bg-red-700"
+          className="w-full px-4 py-3 text-sm font-bold text-white bg-red-600/10 border border-red-500/20 rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2 group"
         >
-          Logout
+          <div className="w-2 h-2 bg-red-500 rounded-full group-hover:bg-white animate-pulse" />
+          Logout Account
         </button>
       </div>
     </div>

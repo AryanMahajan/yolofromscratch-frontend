@@ -302,7 +302,35 @@ export const historyApi = {
     const response = await apiClient.get('/api/history/search/', { params });
     return response.data;
   },
-};
+  };
 
-// Export token manager for use in other components
-export { TokenManager };
+  export const inferenceApi = {
+  // Upload video for processing
+  async uploadVideo(video: File, confidenceThreshold: number = 0.5): Promise<{
+    id: number;
+    video_url: string;
+    stats: {
+      total_frames: number;
+      total_objects_detected: number;
+      class_distribution: Record<string, number>;
+      fps: number;
+      duration: number;
+    };
+    detected_classes: string[];
+  }> {
+    const formData = new FormData();
+    formData.append('video', video);
+    formData.append('confidence_threshold', confidenceThreshold.toString());
+
+    const response = await apiClient.post('/api/inference/upload-video/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 300000, // 5 minutes for long video processing
+    });
+    return response.data;
+  },
+  };
+
+  // Export token manager for use in other components
+  export { TokenManager };
